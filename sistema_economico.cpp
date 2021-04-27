@@ -11,7 +11,8 @@ double agents[N]; //money per agent
 int states[W] = {}; //occupation number per state
 double random_agent();
 double normal_rnum(); //epsilon
-void initialize_agents(double ag[], double T);
+void initialize_agents(double ag[], double T); // each agent starts with the same quantity T
+void initialize_agents2(double ag[], double T); //ag[0] starts with all the money
 void show_agents(double ag[]);
 void show_states(int st[]);
 void interaction(double ag[N], int NSTEPS); //exchange rule between two random agents
@@ -37,6 +38,14 @@ void initialize_agents(double ag[], double T){
 	
 	for(int k=0; k<N; k++){
 		ag[k] = T;
+	}
+}
+
+void initialize_agents2(double ag[], double T){
+	ag[0] = T*N;  
+	
+	for(int k=1; k<N; k++){
+		ag[k] = 0;
 	}
 }
 
