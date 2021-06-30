@@ -1,11 +1,11 @@
 #include <iostream>
 #include <cstdlib>
 
-double lambda = 0.5; //constant saving propensity
+double lambda = 0.1; //constant saving propensity
 const int N = 250; //number of agents
-const int W = 13; //number of states
+const int W = 250; //number of states
 double T = 10.0; //average money per agent
-//M = T*N is the total money 
+//M = T*N is the total money   M = 10*250 = 2500
 
 double agents[N]; //money per agent
 int states[W] = {}; //occupation number per state
@@ -91,7 +91,7 @@ void interaction(double ag[N], int NSTEPS){
 			ag[i] += Delta_m;
 			ag[j] -= Delta_m;
 		}
-		//std::cout << a << "\t" << b << "\t" << epsilon << "\t" << Delta_m << std::endl;
+		//std::cout << i << "\t" << j << "\t" << epsilon << "\t" << Delta_m << std::endl;
 	}
 }
 
@@ -99,13 +99,13 @@ void interaction(double ag[N], int NSTEPS){
 void counting(double ag[N], int st[W]){
 	
 	for(int k=0; k<N; k++){
-		double x = 3.0*ag[k]/T;
+		double x = 25*ag[k]/T;
 		
-		if(x<12){
+		if(x<249){
 			st[(int)x] += 1;
 		}
 		else{
-			st[12] += 1;
+			st[249] += 1;
 		}
 	}
 }
