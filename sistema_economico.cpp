@@ -1,11 +1,11 @@
 #include <iostream>
 #include <cstdlib> //to use rand function
 
-const int N = 8; //number of agents
+const int N = 1000; //number of agents
 double T = 10.0; //average money per agent -> M = T*N is the total money
-double lambda = 0.1; //constant saving propensity
-const int NSIM = 100; //number of simulations
-const int W = 125; //number of states    elegí W = beta*5 = 25*5
+double lambda = 0.9; //constant saving propensity
+const int NSIM = 1000; //number of simulations
+const int W = 125; //number of states (beta=25, W=beta*5)
 
 double agents[N]; //agent income (u vector)
 //double credit[N]; //agent credit (v vector)
@@ -26,11 +26,10 @@ void counting(double ag[N], int st[W]); //evaluates the occupation numbers
 int main(){
 	
 	srand(0); //rand function seed
-	//show_dvector_row(distrib);
 	
 	for(int k=0; k<NSIM; k++){
 		initialize_agents(agents, T);
-		interaction(agents, 10000);
+		interaction(agents, 100000);
 		insertion_sort(agents);
 		
 		for(int l=0; l<N; l++){
@@ -41,8 +40,9 @@ int main(){
 	for(int i=0; i<N; i++){
 		distrib[i] = distrib[i]/NSIM;
 	}
-	
-	show_dvector_row(distrib);
+	//show_agents(distrib);
+	counting(distrib, states);
+	show_states(states);
 	
 	return 0;
 }
@@ -86,7 +86,7 @@ void show_agents(double ag[]){
 
 void show_states(int st[]){
 	
-	for(int k=0; k<W; k++){
+	for(int k=0; k<W-1; k++){
 		std::cout<< st[k] << "\n";
 	}
 }
@@ -148,7 +148,7 @@ void counting(double ag[N], int st[W]){
 			st[(int)x] += 1;
 		}
 		else{
-			st[124] += 1;
+		        st[124] += 1;
 		}
 	}
 }
