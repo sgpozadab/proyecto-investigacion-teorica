@@ -7,9 +7,7 @@ const int NSIM = 1000; //number of simulations
 const int W = 126; //number of states (beta = 25; W = beta*5 + 1)
 
 double agents0[N]; //agent income (u vector)
-//double agents02[N]; 
 double agents05[N];
-//double agents075[N];
 double agents09[N]; 
 
 //double credit[N]; //agent credit (v vector)
