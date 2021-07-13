@@ -4,21 +4,21 @@
 const int N = 8; //number of agents
 double T = 10.0; //average money per agent -> M = T*N is the total money
 double lambda = 0.1; //constant saving propensity
-const int NSIM = 10; //number of simulations
+const int NSIM = 100; //number of simulations
 const int W = 125; //number of states    elegí W = beta*5 = 25*5
 
 double agents[N]; //agent income (u vector)
 //double credit[N]; //agent credit (v vector)
-double ag_matrix[NSIM][N] = {}; //matrix used to get the mean distribution
+double distrib[N] = {}; //auxiliar agent vector to get the final distribution
 int states[W] = {}; //occupation number per state
 double random_agent();
 double normal_rnum(); //epsilon
 void initialize_agents(double ag[], double T); // each agent starts with the same quantity T
 void initialize_agents2(double ag[], double T); //ag[0] starts with all the money
 void initialize_credit(double cr[]); //each agent starts with a credit of 0
+void show_dvector_row(double vec[]);
 void show_agents(double ag[]);
 void show_states(int st[]);
-void show_matrix(double mx[][N]);
 void interaction(double ag[N], int NSTEPS); //exchange rule between two random agents
 void insertion_sort(double v[N]); //sorts a vector by insertion
 void counting(double ag[N], int st[W]); //evaluates the occupation numbers
@@ -26,6 +26,7 @@ void counting(double ag[N], int st[W]); //evaluates the occupation numbers
 int main(){
 	
 	srand(0); //rand function seed
+	//show_dvector_row(distrib);
 	
 	for(int k=0; k<NSIM; k++){
 		initialize_agents(agents, T);
@@ -33,11 +34,15 @@ int main(){
 		insertion_sort(agents);
 		
 		for(int l=0; l<N; l++){
-			ag_matrix[k][l] = agents[l];
+			distrib[l] += agents[l];
 		}
 	}
 	
-	show_matrix(ag_matrix);
+	for(int i=0; i<N; i++){
+		distrib[i] = distrib[i]/NSIM;
+	}
+	
+	show_dvector_row(distrib);
 	
 	return 0;
 }
@@ -64,6 +69,14 @@ void initialize_credit(double cr[]){
 	}
 }
 
+void show_dvector_row(double vec[]){
+	
+	for(int k=0; k<N; k++){
+		std::cout<< vec[k] << " ";
+	}
+	std::cout<< "\n";
+}
+
 void show_agents(double ag[]){
 	
 	for(int k=0; k<N; k++){
@@ -75,16 +88,6 @@ void show_states(int st[]){
 	
 	for(int k=0; k<W; k++){
 		std::cout<< st[k] << "\n";
-	}
-}
-
-void show_matrix(double mx[NSIM][N]){
-	
-	for(int i=0; i<NSIM; i++){
-		for(int j=0; j<N; j++){
-			std::cout<< mx[i][j] << "  ";
-		}
-		std::cout<< "\n";
 	}
 }
 
