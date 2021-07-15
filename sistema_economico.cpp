@@ -1,16 +1,16 @@
 #include <iostream>
 #include <cstdlib> //to use rand function
 
+//---------------------------------------------CONSTANTS AND VECTORS
 const int N = 1000; //number of agents
 double T = 10.0; //average money per agent -> M = T*N is the total money
-const int NSIM = 1000; //number of simulations 
+const int NSIM = 100; //number of simulations 
 const int W = 126; //number of states (beta = 25; W = beta*5 + 1)
 
 double agents0[N]; //agent income (u vector)
 double agents05[N];
 double agents09[N]; 
 
-//double credit[N]; //agent credit (v vector)
 double distrib0[N] = {}; //auxiliar agent vector to get the final distribution
 double distrib05[N] = {};
 double distrib09[N] = {};
@@ -19,7 +19,9 @@ int states05[W] = {};
 int states09[W] = {};
 
 float xaxis[W]; //x axis
+double Y[N] = {}; //Y variable of the Gini coefficient
 
+//----------------------------------------------FUNCTION DECLARATION
 double random_agent();
 double normal_rnum(); //epsilon
 void initialize_agents(double ag[], double T); // each agent starts with the same quantity T
@@ -32,11 +34,13 @@ void show_states(int st[]);
 void interaction(double ag[N], float lambda, int NSTEPS); //exchange rule between two random agents
 void insertion_sort(double v[N]); //sorts a vector by insertion
 void counting(double ag[N], int st[W]); //evaluates the occupation numbers
+double Gini_coef(double vec[]);
 
+//--------------------------------------------------MAIN FUNCTION
 int main(){
 	
 	srand(0); //rand function seed
-	initialize_xaxis(xaxis, 25);
+	//initialize_xaxis(xaxis, 25);
 	
 	for(int k=0; k<NSIM; k++){
 		initialize_agents(agents0, T);
@@ -50,7 +54,7 @@ int main(){
 	for(int i=0; i<N; i++){
 		distrib0[i] = distrib0[i]/NSIM;
 	}
-	counting(distrib0, states0);
+	//counting(distrib0, states0);
 
 	for(int k=0; k<NSIM; k++){
 		initialize_agents(agents05, T);
@@ -64,29 +68,40 @@ int main(){
 	for(int i=0; i<N; i++){
 		distrib05[i] = distrib05[i]/NSIM;
 	}
-	counting(distrib05, states05);
+	//counting(distrib05, states05);
 
 	for(int k=0; k<NSIM; k++){
 		initialize_agents(agents09, T);
 		interaction(agents09, 0.9, 100000);
 		insertion_sort(agents09);
 		
+		
 		for(int l=0; l<N; l++){
 			distrib09[l] += agents09[l];
 		}
 	}
+	
 	for(int i=0; i<N; i++){
 		distrib09[i] = distrib09[i]/NSIM;
 	}
-	counting(distrib09, states09);
+	//counting(distrib09, states09);
 	
-	for(int k=0; k<W-1; k++){
+	double Gini0 = Gini_coef(distrib0);      //0,4994
+	double Gini05 = Gini_coef(distrib05);    //0,2738
+	double Gini09 = Gini_coef(distrib09);    //0,1060
+	
+	std::cout<< Gini0 << "\n"
+	         << Gini05 << "\n"
+			 << Gini09 << "\n";
+	
+/*	for(int k=0; k<W-1; k++){
 	  std::cout<< xaxis[k] << "\t" << states0[k] << "\t" << states05[k] << "\t" << states09[k] <<std::endl;
-	}
+	}*/
 	
 	return 0;
 }
 
+//----------------------------------------------------FUNCTIONS
 void initialize_agents(double ag[], double T){
 	for(int k=0; k<N; k++){
 		ag[k] = T;
@@ -114,7 +129,6 @@ void initialize_xaxis(float xa[], int beta){
 }
 
 void show_dvector_row(double vec[]){
-	
 	for(int k=0; k<N; k++){
 		std::cout<< vec[k] << " ";
 	}
@@ -122,14 +136,12 @@ void show_dvector_row(double vec[]){
 }
 
 void show_agents(double ag[]){
-	
 	for(int k=0; k<N; k++){
 		std::cout<< ag[k] << "\n";
 	}
 }
 
 void show_states(int st[]){
-	
 	for(int k=0; k<W-1; k++){
 		std::cout<< st[k] << "\n";
 	}
@@ -196,3 +208,36 @@ void counting(double ag[N], int st[W]){
 		}
 	}
 }
+
+double Gini_coef(double vec[N]){
+	double y = 0;
+	
+	for(int k=0; k<N; k++){
+		y += vec[k];
+		Y[k] = y;
+	}
+	
+	double A = Y[0];
+	
+	for(int k=2; k<=N; k++){
+		A += (Y[k-1] + Y[k-2]);
+	}
+	
+	double G = 1 - A/(N*Y[N-1]);
+	return G;
+}
+
+/* coeficiente de Gini
+¿quiénes son X_i?... pues X_0=0, X_N=1 ---> X_i=i/N para i=0,1,...,N
+para Y_i... Y_0=0, Y_N=1=m_max/m_max ---> Y_i=Y[i-1]/Y[N-1] para i=1,2,...,N; Y_0=0
+
+luego (X_i-X_{i-1}) = i/N-(i-1)/N = (i-i+1)/N = 1/N
+	  (Y_i+Y_{i-1}) = (Y[i-1]+Y[i-2])/Y[N-1] para i=2,3,...,N. (Y_i-Y_{i-1}) = Y[0]/Y[N-1] para i=1
+	  (X_i-X_{i-1})(Y_i+Y_{i-1}) = (1/N)(Y[i-1]+Y[i-2])/Y[N-1] para i=2,3,...,N
+	  
+G = 1 - \sum_{1}^{N} (X_i-X_{i-1})(Y_i+Y_{i-1})
+  = 1 - (Y[0] + \sum_{2}^{N} (Y[i-1]+Y[i-2]))/(N*Y[N-1])
+  = 1 - A/(N*Y[N-1])
+  
+A = Y[0] + \sum_{2}^{N} (Y[i-1]+Y[i-2])
+*/
