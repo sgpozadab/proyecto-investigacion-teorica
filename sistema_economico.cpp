@@ -5,7 +5,7 @@
 //---------------------------------------------CONSTANTS AND VECTORS
 const int N = 9; //number of agents
 double T = 10.0; //average money per agent -> M = T*N is the total money
-double d = -T; //maximum debt allowed
+double d = -1.0*T; //maximum debt allowed
 const int NSIM = 100; //number of simulations 
 const int W = 126; //number of states (beta = 25; W = beta*5 + 1)
 
@@ -44,32 +44,27 @@ double Gini_coef(double vec[]);
 //--------------------------------------------------MAIN FUNCTION
 int main(){
 	
-	srand(0); //rand function seed
-	//initialize_xaxis(xaxis, 25);
+	srand(736); //rand function seed
 	
+	//INITIALIZATION
+	//initialize_xaxis(xaxis, 25);	
 	initialize_agents(agents0, T);
-	//initialize_credit(cr);
+	initialize_credit(cr);
 	show_dvector_row(agents0);
-	interaction(agents0, 0.9, 100000);
-	//interaction_cr(agents0, cr, 0.5, 20);
-	show_dvector_row(agents0);
-	//show_dvector_row(cr);
 	
+	//INTERACTION
+	interaction_cr(agents0, cr, 0.5, 10000);
+	
+	//AGENT AND CREDIT FINAL VECTORS
+	show_dvector_row(agents0);
+	show_dvector_row(cr);
+	
+	//CONSERVATION OF MONEY
 	double a = 0;
 	for(int i=0; i<N; i++){
 		a += agents0[i];
 	}
-	
 	std::cout<<a<<"\n";
-	
-/*	double n1=3;
-	double n2=-1;
-	if(-1<n1<1 && n2<0){
-		std::cout<<"raios"<<"\n";
-	}
-	if(-1<n1<4 && n2<0){
-		std::cout<<"genial"<<"\n";
-	}*/
 	
 	/*for(int k=0; k<NSIM; k++){
 		initialize_agents(agents0, T);
@@ -221,36 +216,48 @@ void interaction(double ag[N], float lambda, int NSTEPS){
 void interaction_cr(double ag[N], double cr[N], float lambda, int NSTEPS){
 	
 	for(int k=0; k<NSTEPS; k++){
-		double Delta_m = 0, fi = 0, fj = 0, absD_m = 0.0;
-		double epsilon = normal_rnum()/1.0; //with lambda=0 the money grows fast
+		double Delta_m, fi, fj, absfi, absfj, crfi, crfj;
+		double epsilon = normal_rnum()/1.0; //warning: with lambda=0 the money grows fast. SOL: epsilon -> epsilon/2
 		int i = random_agent();
 		int j = random_agent();
-		
+
 		if(i!=j){
 			Delta_m = (1.0-lambda)*(epsilon*ag[j]-(1.0-epsilon)*ag[i]);
-			fi = ag[i] + Delta_m;
-			fj = ag[j] - Delta_m;
-			absD_m = fabs(Delta_m);
+			fi = ag[i] - Delta_m; // ui' si se hiciera la transacción
+			fj = ag[j] + Delta_m; // uj' si se hiciera la transacción
+			absfi = fabs(fi);
+			absfj = fabs(fj);
+			crfi = cr[i] - absfi; // vi' (si i perdiera y se hiciera la transaccción)
+			crfj = cr[j] - absfj; // vj' (si j perdiera y se hiciera la transaccción)
+			//std::cout << i <<"\t"<< j <<"\t"<<Delta_m<<"\t"<<fi<<"\t"<<absfi<<"\t"<<fj<<"\t"<<absfj<<std::endl;
 			
-			if(fi>0 && fj>0){
+			if(d<crfi && d<fi && fi<0 && absfi<=fj){
+				ag[i] = 0;
+				ag[j] = fj-absfi;
+				cr[i] -= absfi;
+				cr[j] += absfi;
+			}
+			if(d<crfj && d<fj && fj<0 && fi>=absfj){
+				ag[i] = fi-absfj;
+				ag[j] = 0;
+				cr[i] += absfj;
+				cr[j] -= absfj;
+			}
+			if(fi>=0 && fj>=0){
 				ag[i] = fi;
 				ag[j] = fj;
-				//std::cout<<"Holi"<<"\n";
-			}
-			
-			if(d<fi<0 && fj>fabs(fi)){
-				cr[i] -= absD_m;
-				cr[j] += absD_m;
-				std::cout<<"Holi"<<"\n";
-			}
-			
-			if(d<fj<0 && fi>fabs(fj)){
-				cr[i] += absD_m;
-				cr[j] -= absD_m;
-				std::cout<<"Holi"<<"\n";
 			}
 		}
-		std::cout << i <<"\t"<< j <<"\t"<< absD_m <<"\t"<< fi <<"\t"<< fj <<std::endl;
+		
+		//Para mostrar ag[] Y cr[] después de cada paso si hay que revisar algún detalle
+		/*for(int k=0; k<N; k++){
+			std::cout<< ag[k] << " ";
+		}	
+		std::cout<< "\n";
+		for(int k=0; k<N; k++){
+			std::cout<< cr[k] << " ";
+		}	
+		std::cout<< "\n";*/
 	}
 }
 
